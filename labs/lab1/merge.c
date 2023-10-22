@@ -37,4 +37,5 @@ int main()
     }
     for (i = 0; i < lena+lenb; i++)
         printf("%d ", c[i]);
+    return 0;
 }
