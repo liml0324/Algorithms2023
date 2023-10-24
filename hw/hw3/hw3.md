@@ -120,4 +120,5 @@ InOrderTreeWalk(x, S)
 ![Alt text](1697642019371-screenshot.png)
 
 # Q5
-![Alt text](1697643001404-screenshot.png)
+涂黑的实心节点不好画，图中用带2个圈的节点表示被标记的节点。
+![Alt text](1698151751492-screenshot.png)
