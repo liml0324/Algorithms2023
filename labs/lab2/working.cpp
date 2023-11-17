@@ -13,4 +13,5 @@ int main(){
         s[i] = max(s[i-1], s[i-2]+a[i]);
     }
     cout << s[n] << endl;
+    return 0;
 }
