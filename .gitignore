@@ -3,3 +3,4 @@
 *.exe
 /.vscode
 test.*
+/cs473
