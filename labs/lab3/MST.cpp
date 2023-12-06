@@ -11,22 +11,25 @@ int main(){
         adj[v-1].push_back({u-1, w});
     }
     vector<bool> vis(n, false);//标记是否访问过
-    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;//小底堆
-    pq.push({0, 0});
-    int cost = 0;
-    while(!pq.empty()){
-        pair<int, int> p = pq.top();
-        pq.pop();
-        int u = p.second;
-        if(vis[u]) continue;
-        vis[u] = true;
-        cost += p.first;
-        for(pair<int, int> v : adj[u]){
-            if(!vis[v.first]){
-                pq.push({v.second, v.first});
-            }
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> big_heap;//大顶堆
+    big_heap.push({0, 0});//从0号顶点开始
+    auto sum = 0;
+    while(big_heap.size()) {
+        auto u = big_heap.top();
+        big_heap.pop();
+        if(vis[u.second])  continue;
+        vis[u.second] = true;
+        sum += u.first;
+        for(auto v: adj[u.second]) {
+            big_heap.push({v.second, v.first});//权重在前面，因为要按权重维护堆
         }
     }
-    cout << cost << endl;
+    for(auto v: vis) {
+        if(!v){
+            cout << -1 << endl;
+            return 0;
+        }
+    }
+    cout << sum << endl;
     return 0;
 }
