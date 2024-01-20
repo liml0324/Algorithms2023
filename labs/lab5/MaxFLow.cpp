@@ -1,79 +1,66 @@
 #include<bits/stdc++.h>
+#define MAX 1000
 using namespace std;
-int m, n, s, t;
-int BFS(vector<vector<int>> &g, vector<vector<pair<int, int>>> &matrix, vector<pair<int, int>> &path) {
-    queue<int> q;
+long long m, n, s, t;
+long long size;
+bool bfs(vector<vector<long long>>& c, vector<long long>& depth) {// c是残余网络
+    depth[s] = 0;
+    queue<long long> q;
     q.push(s);
-    vector<bool> vis(g.size(), false);
-    vis[s] = true;
-    while(q.size()) {
-        int u = q.front();
+    while(!q.empty()) {
+        long long u = q.front();
         q.pop();
-        for(auto &v: g[u]) {
-            if(!vis[v] && matrix[u][v].first > 0 && matrix[u][v].first > matrix[u][v].second) {// 正向边
-                vis[v] = true;
+        for(long long v = 1; v <= size; v++) {
+            if(depth[v] == -1 && c[u][v] > 0) {
+                depth[v] = depth[u] + 1;
                 q.push(v);
-                path.push_back({u, v});
-                if(v == t) {
-                    return 1;
-                }
-            }
-            else if(!vis[v] && matrix[v][u].first > 0 && matrix[v][u].second > 0) {// 反向边
-                vis[v] = true;
-                q.push(v);
-                path.push_back({u, v});
-                if(v == t) {
-                    return 1;
-                }
             }
         }
     }
-    return 0;
+    return depth[t] != -1;
+}
+long long dfs(vector<vector<long long>>& c, vector<long long>& depth, long long u, long long flow) {// 维护残存网络即可
+    if(u == t) return flow;
+    long long res = 0;
+    for(long long v = 1; v <= size; v++) {
+        if(depth[v] == depth[u] + 1 && c[u][v] > 0) {
+            long long f = dfs(c, depth, v, min(flow, c[u][v]));
+            if(f > 0) {
+                c[u][v] -= f;
+                c[v][u] += f;
+                res += f;
+                flow -= f;
+                if(flow == 0) break;
+            }
+        }
+    }
+    return res;
 }
 int main() {
-    cin >> m >> n >> s >> t;
-    vector<vector<int>> g(m + 1);//邻接表
-    vector<vector<pair<int, int>>> matrix(m+1, vector<pair<int, int>>(m+1, {0, 0}));//邻接矩阵
-    for(int i = 0; i < n; i++) {
-        int u, v, c;
-        cin >> u >> v >> c;
-        g[u].push_back(v);
-        g[v].push_back(u);
-        matrix[u][v] = {c, 0};
+    cin >> n >> m >> s >> t;
+    size = n;
+    vector<vector<long long>> c(MAX, vector<long long>(MAX, 0));
+    for(long long i = 0; i < m; i++) {
+        long long u, v, cap;
+        cin >> u >> v >> cap;
+        c[u][v] += cap;
     }
-    int flow = 0;
-    vector<pair<int, int>> path;
-    while(BFS(g, matrix, path)) {
-        vector<pair<int, int>> act_path;
-        act_path.push_back(path.back());
-        int min = INT_MAX;
-        for(int i = path.size()-2; i >= 0; i--) {
-            if(path[i].second == act_path.back().first) {
-                act_path.push_back(path[i]);
-                if(matrix[path[i].first][path[i].second].first > 0 && \
-                    matrix[path[i].first][path[i].second].first-matrix[path[i].first][path[i].second].second < min) {// 正向边
-                    min = matrix[path[i].first][path[i].second].first-matrix[path[i].first][path[i].second].second;
-                }
-                else if(matrix[path[i].second][path[i].first].first > 0 && \
-                    matrix[path[i].second][path[i].first].second < min) {// 反向边
-                    min = matrix[path[i].second][path[i].first].second;
-                }
+    for(long long u = 1; u <= n; u++) {
+        for(long long v = u+1; v <= n; v++) {
+            if(c[u][v] > 0 && c[v][u] > 0) {// 有反向边
+                size++;
+                c[v][size] = c[v][u];
+                c[size][u] = c[v][u];
+                c[v][u] = 0;
             }
         }
-        for(auto &p: act_path) {
-            if(matrix[p.first][p.second].first > 0) {// 正向边
-                matrix[p.first][p.second].second += min;
-                matrix[p.second][p.first].second += min;
-            }
-            else {// 反向边
-                matrix[p.second][p.first].second -= min;
-                matrix[p.first][p.second].second -= min;
-            }
-        }
-        flow += min;
-        cout << min << endl;
-        path.clear();
     }
-    cout << flow << endl;
+    long long maxflow = 0;
+    vector<long long> depth(MAX, -1);
+    while(bfs(c, depth)) {
+        maxflow += dfs(c, depth, s, LONG_LONG_MAX);
+        fill(depth.begin(), depth.end(), -1);
+    }
+    cout << maxflow << endl;
     return 0;
 }
